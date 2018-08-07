@@ -4,6 +4,8 @@ certifi==2018.4.16
 chardet==3.0.4
 decorator==4.3.0
 idna==2.7
+lxml==4.2.4
+PyQt4==4.11.4
 requests==2.19.1
 six==1.11.0
 urllib3==1.23
