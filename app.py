@@ -1,6 +1,6 @@
 import sys
 from website_analyse import WebData, WebAnalyse
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui
 import validators
 
 
@@ -23,8 +23,8 @@ class Window(QtGui.QMainWindow):
 		self.answers = ["Here the results will be shown.",
 						"Waiting for the results...",
 						"Url seems to be incorrect.\n\nPlease try again",
-						"Couldn't find any keywords"
-						]
+						"Couldn't find any keywords",
+						"We encountered some problems; Error: "]
 
 		self.setGeometry(x_start_point, y_start_point, width, height)
 		self.setWindowTitle("keywords-analyse")
@@ -36,11 +36,10 @@ class Window(QtGui.QMainWindow):
 		self.quit_btn = QtGui.QPushButton("Quit", self)
 
 		self.home()
-
+		self.show()
 	def home(self):
 		"""
 			This func puts GUI elements on their places
-			Initiates self.show() at the end to show GUI
 		"""
 		self.insert_url_area.resize(self.width//2, 40)
 		self.insert_url_area.move(self.width//4, 20)
@@ -56,9 +55,6 @@ class Window(QtGui.QMainWindow):
 		self.quit_btn.clicked.connect(self.close_application)
 		self.quit_btn.resize(100, 20)
 		self.quit_btn.move(self.width//2-50, self.height-40)
-
-		self.show()
-
 	def scrap_website(self):
 		"""
 			Starts scraping part
@@ -69,6 +65,8 @@ class Window(QtGui.QMainWindow):
 			Scraps given site and analyzes it
 
 		"""
+		# pop up window for user agent choice and confirmation
+		# return with None if window is closed or canceled
 		choice = QtGui.QMessageBox.question(self, 
 											"robot/user_agent", 
 											"Simulate to visit the site as a user agent?",
@@ -80,6 +78,8 @@ class Window(QtGui.QMainWindow):
 		else:
 			return
 
+		# url validation part
+		# if it's incorrect show message - self.answers[2] and return with None
 		url = self.insert_url_area.toPlainText()
 		url_validation = False
 		if validators.url(url):
@@ -87,25 +87,34 @@ class Window(QtGui.QMainWindow):
 		elif validators.domain(url):
 			url = 'http://' + url
 			url_validation = True
-
-		if url_validation:
-			self.update_results_area(self.answers[1])
-			webdata = WebData(url=url, agent=agent)
-			results = WebAnalyse(webdata)
-			self.update_results_area(str(results))
 		else:
 			self.update_results_area(self.answers[2])
 			return
 
-	def update_results_area(self, text):
-		self.results_area.setPlainText(text)
+		# scraping and data analysis part
+		# shows results in results area
+		if url_validation:
+			self.update_results_area(self.answers[1])
+			webdata = WebData(url=url, agent=agent)
+			if webdata.have_data:
+				results = WebAnalyse(webdata)
+				self.update_results_area(str(results))
+			else:
+				text = self.answers[4] + webdata.http_error
+				self.update_results_area(text)
 
+	def update_results_area(self, message):
+		self.results_area.setPlainText(message)
 
 	def close_application(self):
 		sys.exit()
 
 
-if __name__ == '__main__':
+def main():
 	app = QtGui.QApplication(sys.argv)
 	GUI = Window()
 	sys.exit(app.exec())
+
+
+if __name__ == '__main__':
+	main()
