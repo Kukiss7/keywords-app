@@ -6,6 +6,7 @@ import string
 import requests
 # note that package lxml also needs to be installed to let bs4 work in this code
 
+
 class WebData:
 	""" Represents website's object
 		Connects to the site in __init__
@@ -93,7 +94,6 @@ class WebData:
 			for data in self.site_map_soup.find_all("div"):
 				yield data.get('href')
 
-
 	@staticmethod
 	def keywords_from_metatag(metatag):
 		try:
@@ -103,12 +103,15 @@ class WebData:
 		except AttributeError as e:
 			print(f"Keywords not found probably, error: {e}\n{metatag}")
 
+
 class WebAnalyse:
-	"""Analizes given website in order to check frequency of used keywords
+	"""
+	Analizes given website in order to check frequency of used keywords
 
 	webdata: WebData object
 	p: generator with text from p tags
-	keywords_frequency: histogram dictionary"""
+	keywords_frequency: histogram dictionary
+	"""
 	def __init__(self, webdata):
 		self.webdata = webdata
 		self.p = (p.text for p in webdata.soup.find_all('p'))
@@ -116,11 +119,18 @@ class WebAnalyse:
 		self.count_keywords()
 
 	def __str__(self):
-		res = ''
-		res = res + f"Checked url: {self.webdata.url}\n\nAmount of keywords found on the site:\n\n"
-		for keyword, value in self.keywords_frequency.items():
-			res = res + f"{keyword}: {value}\n\n"
-		return res
+		if self.keywords_frequency:
+			if len(self.keywords_frequency) < 8:
+				lines_dist = '\n\n'
+			else:
+				lines_dist = '\n'
+			res = ''
+			res = res + f"Checked url: {self.webdata.url}\n\nKeywords found on the site:\n\n"
+			for keyword, value in self.keywords_frequency.items():
+				res = res + f"{keyword}: {value}{lines_dist}"
+			return res
+		else:
+			return "Found no keywords"
 
 	def count_keywords(self):
 		for text in self.p:
@@ -129,25 +139,14 @@ class WebAnalyse:
 				if word in self.keywords_frequency:
 					self.keywords_frequency[word] += 1
 
-
+def main():
+	url = 'https://www.w3schools.com'
+	data = WebData(url)
+	webanalyse = WebAnalyse(data)
+	print(webanalyse)
 
 if __name__ == '__main__':
-	# url = 'https://www.agatameble.pl/'
-	# url = 'https://pythonprogramming.net/parsememcparseface/'
-	url = 'https://www.meble.pl'
-	data = WebData(url, agent="user_agent")
-	webanalyse = WebAnalyse(data)
-	# data.check_for_site_map()
-	# with open('scrappedlxml.txt', 'w', encoding='utf-8') as w:
-	#     for link in data.site_map_urls:
-	#         w.write(str(link))
-	#         w.write('\n')
-
-	try:
-		print(webanalyse)
-		print(f"{webanalyse.webdata}\n{webanalyse.keywords_frequency}")
-	except Exception as e:
-		print(e)
+	main()
 
 
 

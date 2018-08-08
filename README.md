@@ -8,3 +8,4 @@ The app:
 - allows user to choose if scraping bot should pretend to be normal user agent
 - checks if provided data is valid url
 - informs user about results or encountered problems
+- bot searches for keywords in text from html paragraphs <p>

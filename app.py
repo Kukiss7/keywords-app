@@ -26,9 +26,8 @@ class Window(QtGui.QMainWindow):
 		self.scrap_btn = QtGui.QPushButton("Scrap", self)
 		self.results_area = QtGui.QTextEdit(self.answers[0], self)
 		self.quit_btn = QtGui.QPushButton("Quit", self)
-		
-		self.home()
 
+		self.home()
 
 	def home(self):
 		self.insert_url_area.resize(self.width//2, 40)
@@ -59,7 +58,6 @@ class Window(QtGui.QMainWindow):
 			agent = 'robot'
 		else:
 			return
-		print('here1')
 		url = self.insert_url_area.toPlainText()
 		url_validation = False
 		if validators.url(url):
@@ -69,14 +67,10 @@ class Window(QtGui.QMainWindow):
 			url_validation = True
 
 		if url_validation:
-			print('here2')
 			self.update_results_area(self.answers[1])
-			print('here3')
 			webdata = WebData(url=url, agent=agent)
 			results = WebAnalyse(webdata)
-			print(type(results))
 			self.update_results_area(str(results))
-			print('here3')
 		else:
 			self.update_results_area(self.answers[2])
 			return
