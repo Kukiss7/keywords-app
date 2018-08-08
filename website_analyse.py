@@ -72,6 +72,11 @@ class WebData:
 
 	def check_for_site_map(self):
 		# should check if it is a main site
+		"""
+		Check if given domain has its site map
+
+		It is not used for now
+		"""
 		endings = ['sitemap.xml', 'sitemap']
 		for ending in endings:
 			full_link = urllib.parse.urljoin(self.url, ending)
@@ -96,6 +101,9 @@ class WebData:
 
 	@staticmethod
 	def keywords_from_metatag(metatag):
+		"""
+			Looks for 'content' tag in given meta tag and separates its contents by ',' and clears spaces
+		"""
 		try:
 			for tag in metatag.attrs:
 				if tag == 'content':
@@ -106,7 +114,7 @@ class WebData:
 
 class WebAnalyse:
 	"""
-	Analizes given website in order to check frequency of used keywords
+	Analyzes given website in order to check frequency of used keywords
 
 	webdata: WebData object
 	p: generator with text from p tags
@@ -114,7 +122,7 @@ class WebAnalyse:
 	"""
 	def __init__(self, webdata):
 		self.webdata = webdata
-		self.p = (p.text for p in webdata.soup.find_all('p'))
+		self.p_text = (p.text for p in webdata.soup.find_all('p'))
 		self.keywords_frequency = {keyword.lower(): 0 for keyword in self.webdata.keywords}
 		self.count_keywords()
 
@@ -132,8 +140,21 @@ class WebAnalyse:
 		else:
 			return "Found no keywords"
 
+	def __repr__(self):
+		res = ''
+		res += str(self.webdata) + '\n'
+		res += str(self.keywords_frequency) + '\n'
+		return res
+
 	def count_keywords(self):
-		for text in self.p:
+		"""
+			Searches keywords in text from <p> paragrapghs
+			Iterates through text, lowers words and eliminates punctuation signs 
+			to check words with keywords
+
+			Updates self.keyword_frequency dictionary
+		"""
+		for text in self.p_text:
 			for word in text.split():
 				word = word.strip(string.punctuation).lower()
 				if word in self.keywords_frequency:
@@ -143,7 +164,7 @@ def main():
 	url = 'https://www.w3schools.com'
 	data = WebData(url)
 	webanalyse = WebAnalyse(data)
-	print(webanalyse)
+	print(webanalyse.__repr__())
 
 if __name__ == '__main__':
 	main()

@@ -5,8 +5,15 @@ import validators
 
 
 class Window(QtGui.QMainWindow):
+	"""
+		GUI window representation
 
-	
+		width: width of the window
+		height: height of the window
+		x_start_point: horizontal start poin
+		y_start_point: vertical start point
+		answers: possible statements in results area when there is no results
+	"""	
 	def __init__(self, width=500, height=500, x_start_point=50, y_start_point=100):
 		super(Window, self).__init__()
 		self.width = width
@@ -16,7 +23,8 @@ class Window(QtGui.QMainWindow):
 		self.answers = ["Here the results will be shown.",
 						"Waiting for the results...",
 						"Url seems to be incorrect.\n\nPlease try again",
-						"Couldn't find any keywords"]
+						"Couldn't find any keywords"
+						]
 
 		self.setGeometry(x_start_point, y_start_point, width, height)
 		self.setWindowTitle("keywords-analyse")
@@ -30,6 +38,10 @@ class Window(QtGui.QMainWindow):
 		self.home()
 
 	def home(self):
+		"""
+			This func puts GUI elements on their places
+			Initiates self.show() at the end to show GUI
+		"""
 		self.insert_url_area.resize(self.width//2, 40)
 		self.insert_url_area.move(self.width//4, 20)
 
@@ -48,6 +60,15 @@ class Window(QtGui.QMainWindow):
 		self.show()
 
 	def scrap_website(self):
+		"""
+			Starts scraping part
+			Inititated with scrap_btn
+			First checks for confirmation and used agent
+			Validates given by user url
+			Adds 'http://' to url if 'http://' or 'https://' is not present, for scrapper to work correctly
+			Scraps given site and analyzes it
+
+		"""
 		choice = QtGui.QMessageBox.question(self, 
 											"robot/user_agent", 
 											"Simulate to visit the site as a user agent?",
@@ -58,6 +79,7 @@ class Window(QtGui.QMainWindow):
 			agent = 'robot'
 		else:
 			return
+
 		url = self.insert_url_area.toPlainText()
 		url_validation = False
 		if validators.url(url):
