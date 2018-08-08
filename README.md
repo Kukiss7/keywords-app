@@ -9,3 +9,5 @@ The app:
 - checks if provided data is valid url
 - informs user about results or encountered problems
 - bot searches keywords in text taken from html paragraphs 
+
+In dist/ is self executable file .exe created with http://www.pyinstaller.org/
