@@ -1,6 +1,6 @@
 This is a desktop app that analyzes given by user websites for its use of keywords.
 
-It's written in python and app is made in QT with PyQt4 libraries
+It's written in python and app is made in QT with PyQt5 libraries
 
 The app:
 - creates GUI for user
