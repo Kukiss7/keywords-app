@@ -22,6 +22,8 @@ class WebData:
 		soup: bs4.BeautifulSoup object; structured website's code
 		keywords: set of keywords from metatag; empty list if not found
 	"""
+
+
 	def __init__(self, url, agent='robot'):
 		self.url = url
 		self.agent = agent
@@ -35,12 +37,14 @@ class WebData:
 			site_map_url = None
 			site_map_sauce = None
 
+
 	def __str__(self):
 		return f"url: {self.url}\n"\
 			   f"agent: {self.agent}\n"\
 			   f"have_data: {self.have_data}\n"\
 			   f"getcode: {self.url_bytes.getcode()}\n"\
 			   f"keywords: {self.keywords}"
+
 
 	def open_url(self, given_url=None):
 		"""scraps the website as a python bot or imitates user agent
@@ -79,6 +83,7 @@ class WebData:
 			self.http_error = "Could not find http error;\n\nPlease check provided url"
 			# Should log e in log file
 
+
 	def check_for_keywords(self):
 		""" Looks for meta tag with 'name': 'keywords'
 			if not found analyzes all meta tags with 'name'
@@ -100,6 +105,7 @@ class WebData:
 		else:
 			return []
 
+
 	def check_for_site_map(self):
 		# should check if it is a main site
 		"""
@@ -118,6 +124,7 @@ class WebData:
 			except urllib.error.HTTPError:
 				continue
 
+
 	def site_map_urls_gen(self):
 		"""return a generator with links"""
 		if self.site_map_url.endswith('.xml'):
@@ -128,6 +135,7 @@ class WebData:
 		else:
 			for data in self.site_map_soup.find_all("div"):
 				yield data.get('href')
+
 
 	@staticmethod
 	def keywords_from_metatag(metatag):
@@ -157,6 +165,7 @@ class WebAnalyse:
 		self.keywords_frequency = {keyword.lower(): 0 for keyword in self.webdata.keywords}
 		self.count_keywords()
 
+
 	def __str__(self):
 		if self.keywords_frequency:
 			if len(self.keywords_frequency) < 10:
@@ -171,11 +180,13 @@ class WebAnalyse:
 		else:
 			return "Found no keywords"
 
+
 	def __repr__(self):
 		res = ''
 		res += str(self.webdata) + '\n'
 		res += str(self.keywords_frequency) + '\n'
 		return res
+
 
 	def count_keywords(self):
 		"""
@@ -191,6 +202,7 @@ class WebAnalyse:
 				if word in self.keywords_frequency:
 					self.keywords_frequency[word] += 1
 
+
 def main():
 	url = 'https://meble.pl'
 	data = WebData(url)
@@ -199,6 +211,7 @@ def main():
 		print(webanalyse.__repr__())
 	else:
 		print(data.http_error)
+		
 
 if __name__ == '__main__':
 	main()

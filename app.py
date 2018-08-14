@@ -14,6 +14,8 @@ class Window(QtGui.QMainWindow):
 		y_start_point: vertical start point
 		answers: possible statements in results area when there is no results
 	"""	
+
+	
 	def __init__(self, width=500, height=500, x_start_point=50, y_start_point=100):
 		super(Window, self).__init__()
 		self.width = width
@@ -38,6 +40,7 @@ class Window(QtGui.QMainWindow):
 		self.home()
 		self.show()
 
+
 	def home(self):
 		"""
 			This func puts GUI elements on their places
@@ -56,6 +59,8 @@ class Window(QtGui.QMainWindow):
 		self.quit_btn.clicked.connect(self.close_application)
 		self.quit_btn.resize(100, 20)
 		self.quit_btn.move(self.width//2-50, self.height-40)
+
+
 	def scrap_website(self):
 		"""
 			Starts scraping part
@@ -104,8 +109,10 @@ class Window(QtGui.QMainWindow):
 				text = self.answers[4] + webdata.http_error
 				self.update_results_area(text)
 
+
 	def update_results_area(self, message):
 		self.results_area.setPlainText(message)
+
 
 	def close_application(self):
 		sys.exit()
