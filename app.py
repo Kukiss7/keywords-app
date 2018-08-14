@@ -1,6 +1,6 @@
 import sys
 from website_analyse import WebData, WebAnalyse
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QMessageBox
 from PyQt5 import QtWidgets, QtGui
 import validators
 
@@ -13,7 +13,7 @@ class Window(QMainWindow):
 		height: height of the window
 		x_start_point: horizontal start poin
 		y_start_point: vertical start point
-		answers: possible statements in results area when there is no results
+		answers: possible statements in results area when there is no result
 	"""	
 
 	
@@ -44,7 +44,7 @@ class Window(QMainWindow):
 
 	def home(self):
 		"""	This func puts GUI elements on their places """
-		
+
 		self.insert_url_area.resize(self.width//2, 40)
 		self.insert_url_area.move(self.width//4, 20)
 
@@ -73,13 +73,13 @@ class Window(QMainWindow):
 		"""
 		# pop up window for user agent choice and confirmation
 		# return with None if window is closed or canceled
-		choice = QtGui.QMessageBox.question(self, 
+		choice = QMessageBox.question(self, 
 											"robot/user_agent", 
 											"Simulate to visit the site as a user agent?",
-											 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
-		if choice == QtGui.QMessageBox.Yes:
+											 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+		if choice == QMessageBox.Yes:
 			agent = 'user_agent'
-		elif choice == QtGui.QMessageBox.No:
+		elif choice == QMessageBox.No:
 			agent = 'robot'
 		else:
 			return

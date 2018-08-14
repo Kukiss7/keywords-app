@@ -3,7 +3,6 @@ import urllib.request
 import urllib.parse
 import validators
 import string
-import requests
 # note that package lxml also needs to be installed to let bs4 work in this code
 
 
