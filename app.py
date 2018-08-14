@@ -37,6 +37,7 @@ class Window(QtGui.QMainWindow):
 
 		self.home()
 		self.show()
+
 	def home(self):
 		"""
 			This func puts GUI elements on their places
