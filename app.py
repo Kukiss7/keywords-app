@@ -1,10 +1,11 @@
 import sys
 from website_analyse import WebData, WebAnalyse
-from PyQt4 import QtGui
+from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton
+from PyQt5 import QtWidgets, QtGui
 import validators
 
 
-class Window(QtGui.QMainWindow):
+class Window(QMainWindow):
 	"""
 		GUI window representation
 
@@ -32,19 +33,18 @@ class Window(QtGui.QMainWindow):
 		self.setWindowTitle("keywords-analyse")
 		self.setWindowIcon(QtGui.QIcon('logo.png'))
 
-		self.insert_url_area = QtGui.QTextEdit('insert url', self)
-		self.scrap_btn = QtGui.QPushButton("Scrap", self)
-		self.results_area = QtGui.QTextEdit(self.answers[0], self)
-		self.quit_btn = QtGui.QPushButton("Quit", self)
+		self.insert_url_area = QTextEdit('insert url', self)
+		self.scrap_btn = QPushButton("Scrap", self)
+		self.results_area = QTextEdit(self.answers[0], self)
+		self.quit_btn = QPushButton("Quit", self)
 
 		self.home()
 		self.show()
 
 
 	def home(self):
-		"""
-			This func puts GUI elements on their places
-		"""
+		"""	This func puts GUI elements on their places """
+		
 		self.insert_url_area.resize(self.width//2, 40)
 		self.insert_url_area.move(self.width//4, 20)
 
@@ -119,7 +119,7 @@ class Window(QtGui.QMainWindow):
 
 
 def main():
-	app = QtGui.QApplication(sys.argv)
+	app = QApplication(sys.argv)
 	GUI = Window()
 	sys.exit(app.exec())
 
