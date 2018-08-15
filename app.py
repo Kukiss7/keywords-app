@@ -27,7 +27,8 @@ class Window(QMainWindow):
 						"Waiting for the results...",
 						"Url seems to be incorrect.\n\nPlease try again",
 						"Couldn't find any keywords",
-						"We encountered some problems; Error: "]
+						"We encountered some problems; Error: ",
+						"We encountered some problems"]
 
 		self.setGeometry(x_start_point, y_start_point, width, height)
 		self.setWindowTitle("keywords-analyse")
@@ -68,7 +69,7 @@ class Window(QMainWindow):
 			First checks for confirmation and used agent
 			Validates given by user url
 			Adds 'http://' to url if 'http://' or 'https://' is not present, for scrapper to work correctly
-			Scraps given site and analyzes it
+			Scraps given site and analyses it
 
 		"""
 		# pop up window for user agent choice and confirmation
@@ -102,12 +103,17 @@ class Window(QMainWindow):
 		if url_validation:
 			self.update_results_area(self.answers[1])
 			webdata = WebData(url=url, agent=agent)
+			webdata.open_url()
+			text = ''
 			if webdata.have_data:
 				results = WebAnalyse(webdata)
-				self.update_results_area(str(results))
+				text = str(results)
 			else:
-				text = self.answers[4] + webdata.http_error
-				self.update_results_area(text)
+				if webdata.http_error:
+					text = self.answers[4] + webdata.http_error
+				else:
+					text = self.answers[5]
+			self.update_results_area(text)
 
 
 	def update_results_area(self, message):
