@@ -156,6 +156,41 @@ class WebAnalyse:
 				return [key.strip(' ') for key in metatag[tag].split(',')]
 
 
+class UrlValidation:
+
+	def __init__(self, input_url):
+		self.input_url = input_url
+		self.validator = None
+		self.validation = self.validate_url()
+		self.output_url = set_output_url()
+
+
+	def validate_url(self):
+		"""
+			Validates given url
+		"""
+
+		if validators.url(self.input_url):
+			self.validator = 'url'
+			return True
+		elif validators.domain(self.input_url):
+			self.validator = 'domain'
+			return True
+		else:
+			return False
+
+
+	def set_output_url(self):
+		"""
+			Adds 'http://' to url if 'http://' or 'https://' is not present, for scrapper to work correctly
+		"""
+
+		if self.validator=='domain':
+			return 'http://' + self.input_url
+		else:
+			return self.input_url
+
+
 def main():
 	url = 'https://www.w3schools.com'
 	data = WebData(url)

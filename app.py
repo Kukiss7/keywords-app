@@ -1,5 +1,5 @@
 import sys
-from website_analyse import WebData, WebAnalyse
+from website_analyse import WebData, WebAnalyse, UrlValidation
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QMessageBox
 from PyQt5 import QtWidgets, QtGui
 import validators
@@ -88,8 +88,8 @@ class Window(QMainWindow):
 		# url validation part
 		# if it's incorrect show message - self.answers[2] and return with None
 		url = self.insert_url_area.toPlainText()
-		url_validation = False
-		if validators.url(url):
+		url_validation = UrlValidation(url)
+		if url_validation.validation:
 			url_validation = True
 		elif validators.domain(url):
 			url = 'http://' + url
