@@ -1,7 +1,7 @@
 import sys
 from website_analyse import WebData, WebAnalyse, UrlValidation
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QMessageBox
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtGui
 import validators
 
 
@@ -13,9 +13,8 @@ class Window(QMainWindow):
 		height: height of the window
 		x_start_point: horizontal start poin
 		y_start_point: vertical start point
-		answers: possible statements in results area when there is no result
+		messages: possible statements in results area when there is no result
 	"""	
-
 	
 	def __init__(self, width=500, height=500, x_start_point=50, y_start_point=100):
 		super(Window, self).__init__()
@@ -23,12 +22,12 @@ class Window(QMainWindow):
 		self.height = height
 		self.x_start_point = x_start_point
 		self.y_start_point = y_start_point
-		self.answers = ["Here the results will be shown.",
+		self.messages = ["Here the results will be shown.",
 						"Waiting for the results...",
 						"Url seems to be incorrect.\n\nPlease try again",
 						"Couldn't find any keywords",
 						"We encountered some problems; Error: ",
-						"We encountered some problems"]
+						"We encountered some problems.\n\nPlease try again"]
 
 		self.setGeometry(x_start_point, y_start_point, width, height)
 		self.setWindowTitle("keywords-analyse")
@@ -36,20 +35,21 @@ class Window(QMainWindow):
 
 		self.insert_url_area = QTextEdit('insert url', self)
 		self.scrap_btn = QPushButton("Scrap", self)
-		self.results_area = QTextEdit(self.answers[0], self)
+		self.results_area = QTextEdit(self.messages[0], self)
 		self.quit_btn = QPushButton("Quit", self)
+		self.scrap_preparation = None
 
 		self.home()
 		self.show()
 
 
 	def home(self):
-		"""	This func puts GUI elements on their places """
-
+		"""	This method puts GUI elements on their places
+		"""
 		self.insert_url_area.resize(self.width//2, 40)
 		self.insert_url_area.move(self.width//4, 20)
 
-		self.scrap_btn.clicked.connect(self.scrap_website)
+		self.scrap_btn.clicked.connect(self.scrap_procedure)
 		self.scrap_btn.resize(40, 30)
 		self.scrap_btn.move(self.width//2-20, 70)
 
@@ -62,66 +62,94 @@ class Window(QMainWindow):
 		self.quit_btn.move(self.width//2-50, self.height-40)
 
 
-	def scrap_website(self):
+	def scrap_procedure(self):
 		"""
 			Starts scraping part
-			Inititated with scrap_btn
-			First checks for confirmation and used agent
-			Validates given by user url
-			Adds 'http://' to url if 'http://' or 'https://' is not present, for scrapper to work correctly
-			Scraps given site and analyses it
-
+			Initiated with scrap_btn
 		"""
-		# pop up window for user agent choice and confirmation
-		# return with None if window is closed or canceled
-		choice = QMessageBox.question(self, 
-											"robot/user_agent", 
-											"Simulate to visit the site as a user agent?",
-											 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-		if choice == QMessageBox.Yes:
-			agent = 'user_agent'
-		elif choice == QMessageBox.No:
-			agent = 'robot'
-		else:
+		user_answer = self.ask_for_agent()
+		if Window.is_canceled(user_answer):
 			return
-
-		# url validation part
-		# if it's incorrect show message - self.answers[2] and return with None
-		url = self.insert_url_area.toPlainText()
-		url_validation = UrlValidation(url)
-		if url_validation.validation:
-			url_validation = True
-		elif validators.domain(url):
-			url = 'http://' + url
-			url_validation = True
 		else:
-			self.update_results_area(self.answers[2])
-			return
-
-		# scraping and data analysis part
-		# shows results in results area
-		if url_validation:
-			self.update_results_area(self.answers[1])
-			webdata = WebData(url=url, agent=agent)
-			webdata.open_url()
-			text = ''
-			if webdata.have_data:
-				results = WebAnalyse(webdata)
-				text = str(results)
-			else:
-				if webdata.http_error:
-					text = self.answers[4] + webdata.http_error
+			given_url = self.read_insert_url_area()
+			self.scrap_preparation = ScrapPreparation(given_url, user_answer)
+			if self.scrap_preparation.validation:
+				self.update_results_area(self.messages[1])
+				webdata = WebData(url=self.scrap_preparation.validation.http_url, 
+								  use_user_agent=self.scrap_preparation.use_user_agent)
+				webdata.open_url()
+				text = ''
+				if webdata.have_data:
+					results = WebAnalyse(webdata)
+					text = str(results)
 				else:
-					text = self.answers[5]
-			self.update_results_area(text)
+					if webdata.http_error:
+						text = self.messages[4] + webdata.http_error
+					else:
+						text = self.messages[5]
+				self.update_results_area(text)
+			else:
+				self.update_results_area(self.messages[2])
+
+
+
+	def ask_for_agent(self):
+		""" pop up window for user agent choice or cancelation
+		"""
+		return QMessageBox.question(self, 
+									"robot/user_agent", 
+									"Simulate to visit the site as a user agent?",
+									QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
+
+
+	def read_insert_url_area(self):
+		""" Returns data provided by user
+		"""
+		return self.insert_url_area.toPlainText()
 
 
 	def update_results_area(self, message):
+		""" Updates a message for user
+		"""
 		self.results_area.setPlainText(message)
 
 
 	def close_application(self):
+		""" Closes the application
+		"""
 		sys.exit()
+
+
+	@staticmethod
+	def is_canceled(answer):
+		""" Checks if given answer is canceled
+		"""
+		return answer == QMessageBox.Cancel
+
+
+class ScrapPreparation:
+	"""
+		Gathers needed elemenets to start scrapping
+		url: str; provided url
+		user_answer; QMessageBox.Yes or QMessageBox.No
+		validation; UrlValidation object
+	"""
+
+
+	def __init__(self, url, user_answer):
+		self.url = url
+		self.user_answer = user_answer
+		self.use_user_agent = self.interpret_user_answer()
+		self.validation = UrlValidation(self.url)
+
+
+	def interpret_user_answer(self):
+		""" Turns provided QMessageBox objects into boolean answers
+		"""
+		if self.user_answer == QMessageBox.Yes:
+			return True
+		elif self.user_answer == QMessageBox.No:
+			return False
 
 
 def main():

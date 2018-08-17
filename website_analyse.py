@@ -20,9 +20,9 @@ class WebData:
 	"""
 
 
-	def __init__(self, url, agent='robot'):
+	def __init__(self, url, use_user_agent=False):
 		self.url = url
-		self.agent = agent
+		self.use_user_agent = use_user_agent
 		self.have_data = False
 		self.http_error = None
 		self.error = None
@@ -46,17 +46,14 @@ class WebData:
 		    every error is saved in self.error
 		"""
 		try:
-			if self.agent == 'robot':
-				url_bytes = urllib.request.urlopen(self.url)
-				
-			elif self.agent == 'user_agent':
+			if self.use_user_agent:
 				headers = {}
 				headers['User-Agent'] = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 " \
 										"(KHTML, like Gecko) Version/9.1.2 Safari/601.7.7"
 				req = urllib.request.Request(self.url, headers=headers)
 				url_bytes = urllib.request.urlopen(req)
-			self.url_bytes = url_bytes
-			self.have_data = True
+			else:
+				url_bytes = urllib.request.urlopen(self.url)
 		except urllib.error.HTTPError as e:
 			e = str(e).lower()
 			index = e.find('http error')
@@ -65,25 +62,28 @@ class WebData:
 			self.error = e
 		except Exception as e:
 			self.error = str(e)
+		else:
+			self.url_bytes = url_bytes
+			self.have_data = True
 
 
 class WebAnalyse:
 	"""
-	Analyses given website in order to check frequency of used keywords
+		Analyses given website in order to check frequency of used keywords
 
-	webdata: WebData object
-	sauce: plain text from url_bytes
-	soup: bs4.BeautifulSoup object; structured website's code
-	keywords: set of keywords from metatag; empty list if not found
-	p: generator with text from p tags
-	keywords_frequency: histogram dictionary
+		webdata: WebData object
+		sauce: plain text from url_bytes
+		soup: bs4.BeautifulSoup object; structured website's code
+		keywords: set of keywords from metatag; empty set if not found
+		p: generator with text from p tags
+		keywords_frequency: histogram dictionary
 	"""
 	def __init__(self, webdata):
 		self.webdata = webdata
 		self.sauce = webdata.url_bytes.read()
 		self.soup = bs.BeautifulSoup(self.sauce, 'lxml')
 		self.keywords_tag = self.check_for_keywords()
-		self.keywords = []
+		self.keywords = set()
 		if self.keywords_tag:
 			self.keywords = set(WebAnalyse.keywords_from_metatag(self.keywords_tag))
 		self.p_text = (p.text for p in self.soup.find_all('p'))
@@ -157,12 +157,20 @@ class WebAnalyse:
 
 
 class UrlValidation:
+	"""
+		Validates given url and makes sure to output an url that starts with 'http' or 'https'
+
+		input_url: str; provided url
+		validator: str; kind of validators that input_url has passed through 'url' or 'domain'
+		validation: boolean;
+		http_url: output url with made sure for 'http://' at the beginning
+	"""
 
 	def __init__(self, input_url):
 		self.input_url = input_url
 		self.validator = None
 		self.validation = self.validate_url()
-		self.output_url = set_output_url()
+		self.http_url = self.set_http_url()
 
 
 	def validate_url(self):
@@ -180,15 +188,16 @@ class UrlValidation:
 			return False
 
 
-	def set_output_url(self):
+	def set_http_url(self):
 		"""
 			Adds 'http://' to url if 'http://' or 'https://' is not present, for scrapper to work correctly
 		"""
 
 		if self.validator=='domain':
-			return 'http://' + self.input_url
+			http_url = 'http://' + self.input_url
 		else:
-			return self.input_url
+			http_url = self.input_url
+		return http_url
 
 
 def main():
