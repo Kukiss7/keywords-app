@@ -14,6 +14,14 @@ class Window(QMainWindow):
 		x_start_point: horizontal start poin
 		y_start_point: vertical start point
 		messages: possible statements in results area when there is no result
+
+		GUI elements:
+		insert_url_area: QTextEdit;
+		results_area: QTextEdit; 
+		scrap_btn: QPushButton;
+		quit_btn: QPushButton;
+
+		scrap_preparation: ScarpPreparation object when scrapping is activated
 	"""	
 	
 	def __init__(self, width=500, height=500, x_start_point=50, y_start_point=100):
@@ -34,8 +42,8 @@ class Window(QMainWindow):
 		self.setWindowIcon(QtGui.QIcon('logo.png'))
 
 		self.insert_url_area = QTextEdit('insert url', self)
-		self.scrap_btn = QPushButton("Scrap", self)
 		self.results_area = QTextEdit(self.messages[0], self)
+		self.scrap_btn = QPushButton("Scrap", self)
 		self.quit_btn = QPushButton("Quit", self)
 		self.scrap_preparation = None
 
@@ -44,7 +52,7 @@ class Window(QMainWindow):
 
 
 	def home(self):
-		"""	This method puts GUI elements on their places
+		"""	Puts GUI elements on their places
 		"""
 		self.insert_url_area.resize(self.width//2, 40)
 		self.insert_url_area.move(self.width//4, 20)

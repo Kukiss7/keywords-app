@@ -31,7 +31,7 @@ class WebData:
 
 	def __str__(self):
 		return f"url: {self.url}\n"\
-			   f"agent: {self.agent}\n"\
+			   f"use_user_agent: {self.use_user_agent}\n"\
 			   f"have_data: {self.have_data}\n"\
 			   f"http_error: {self.http_error}\n"\
 			   f"error: {self.error}"
@@ -74,6 +74,7 @@ class WebAnalyse:
 		webdata: WebData object
 		sauce: plain text from url_bytes
 		soup: bs4.BeautifulSoup object; structured website's code
+		keywords_tag: bs4.element.Tag; with keywords
 		keywords: set of keywords from metatag; empty set if not found
 		p: generator with text from p tags
 		keywords_frequency: histogram dictionary
@@ -135,7 +136,7 @@ class WebAnalyse:
 		"""
 			Searches keywords in text from <p> paragrapghs
 			Iterates through text, lowers words and eliminates punctuation signs 
-			to check words with keywords
+			to compare words with keywords
 
 			Updates self.keyword_frequency dictionary
 		"""
