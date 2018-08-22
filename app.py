@@ -1,5 +1,5 @@
 import sys
-from website_analyse import WebData, WebAnalyse, UrlValidation
+from website_analyse import WebBytes, WebAnalyse, CountKeywords, UrlValidation
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QMessageBox
 from PyQt5 import QtGui
 import validators
@@ -23,7 +23,6 @@ class Window(QMainWindow):
 
 		scrap_preparation: ScarpPreparation object when scrapping is activated
 	"""	
-	
 	def __init__(self, width=500, height=500, x_start_point=50, y_start_point=100):
 		super(Window, self).__init__()
 		self.width = width
@@ -83,16 +82,17 @@ class Window(QMainWindow):
 			self.scrap_preparation = ScrapPreparation(given_url, user_answer)
 			if self.scrap_preparation.validation:
 				self.update_results_area(self.messages[1])
-				webdata = WebData(url=self.scrap_preparation.validation.http_url, 
+				web_bytes = WebBytes(url=self.scrap_preparation.validation.http_url, 
 								  use_user_agent=self.scrap_preparation.use_user_agent)
-				webdata.open_url()
+				web_bytes.open_url()
 				text = ''
-				if webdata.have_data:
-					results = WebAnalyse(webdata)
-					text = str(results)
+				if web_bytes.have_data:
+					web_analyse = WebAnalyse(web_bytes)
+					count_keywords = CountKeywords(web_analyse)
+					text = str(count_keywords)
 				else:
-					if webdata.http_error:
-						text = self.messages[4] + webdata.http_error
+					if web_bytes.http_error:
+						text = self.messages[4] + web_bytes.http_error
 					else:
 						text = self.messages[5]
 				self.update_results_area(text)
@@ -142,8 +142,6 @@ class ScrapPreparation:
 		user_answer; QMessageBox.Yes or QMessageBox.No
 		validation; UrlValidation object
 	"""
-
-
 	def __init__(self, url, user_answer):
 		self.url = url
 		self.user_answer = user_answer

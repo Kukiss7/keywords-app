@@ -6,20 +6,18 @@ import string
 # note that package lxml also needs to be installed to let bs4 work in this code
 
 
-class WebData:
+class WebBytes:
 	""" Represents website's object
 		Connects to the site in __init__
 
 		url: given website's url
-		agent: 'user_agent' or 'robot'
+		use_user_agent: boolean 
 		have_data: boolean, False if got error during connection
 		http_error: handles http error if found
 		error: string version of an error if that occured during connection
 
 		url_bytes: opened site or None if connection failed
 	"""
-
-
 	def __init__(self, url, use_user_agent=False):
 		self.url = url
 		self.use_user_agent = use_user_agent
@@ -69,48 +67,29 @@ class WebData:
 
 class WebAnalyse:
 	"""
-		Analyses given website in order to check frequency of used keywords
-
+		Analyses given website, checks for metatag with keywords and searches p tags from body
 		webdata: WebData object
 		sauce: plain text from url_bytes
 		soup: bs4.BeautifulSoup object; structured website's code
 		keywords_tag: bs4.element.Tag; with keywords
 		keywords: set of keywords from metatag; empty set if not found
 		p: generator with text from p tags
-		keywords_frequency: histogram dictionary
 	"""
-	def __init__(self, webdata):
-		self.webdata = webdata
-		self.sauce = webdata.url_bytes.read()
+	def __init__(self, web_bytes):
+		self.web_bytes = web_bytes
+		self.sauce = web_bytes.url_bytes.read()
 		self.soup = bs.BeautifulSoup(self.sauce, 'lxml')
 		self.keywords_tag = self.check_for_keywords()
 		self.keywords = set()
 		if self.keywords_tag:
 			self.keywords = set(WebAnalyse.keywords_from_metatag(self.keywords_tag))
 		self.p_text = (p.text for p in self.soup.find_all('p'))
-		self.keywords_frequency = {keyword.lower(): 0 for keyword in self.keywords}
-		self.count_keywords()
-
-
-	def __str__(self):
-		if self.keywords_frequency:
-			if len(self.keywords_frequency) < 10:
-				lines_dist = '\n\n'
-			else:
-				lines_dist = '\n'
-			res = ''
-			res = res + f"Checked url: {self.webdata.url}\n\nKeywords found on the site:\n\n"
-			for keyword, value in self.keywords_frequency.items():
-				res = res + f"{keyword}: {value}{lines_dist}"
-			return res
-		else:
-			return "Found no keywords"
 
 
 	def __repr__(self):
 		res = ''
-		res += str(self.webdata) + '\n'
-		res += str(self.keywords_frequency) + '\n'
+		res += str(self.web_bytes) + '\n'
+		res += str(self.keywords) + '\n'
 		return res
 
 
@@ -132,21 +111,6 @@ class WebAnalyse:
 					continue
 
 
-	def count_keywords(self):
-		"""
-			Searches keywords in text from <p> paragrapghs
-			Iterates through text, lowers words and eliminates punctuation signs 
-			to compare words with keywords
-
-			Updates self.keyword_frequency dictionary
-		"""
-		for text in self.p_text:
-			for word in text.split():
-				word = word.strip(string.punctuation).lower()
-				if word in self.keywords_frequency:
-					self.keywords_frequency[word] += 1
-
-
 	@staticmethod
 	def keywords_from_metatag(metatag):
 		"""
@@ -155,6 +119,45 @@ class WebAnalyse:
 		for tag in metatag.attrs:
 			if tag.lower() == 'content':
 				return [key.strip(' ') for key in metatag[tag].split(',')]
+
+
+class CountKeywords:
+	"""	Calculates use of website's keywords in its contents
+	"""
+	def __init__(self, web_analyse):
+		self.web_analyse = web_analyse
+		self.keywords_frequency = {keyword.lower(): 0 for keyword in self.web_analyse.keywords}
+		self.count_keywords()
+
+
+	def __str__(self):
+		if self.keywords_frequency:
+			if len(self.keywords_frequency) < 10:
+				lines_dist = '\n\n'
+			else:
+				lines_dist = '\n'
+			res = ''
+			res = res + f"Checked url: {self.web_analyse.web_bytes.url}\n\nKeywords found on the site:\n\n"
+			for keyword, value in self.keywords_frequency.items():
+				res = res + f"{keyword}: {value}{lines_dist}"
+			return res
+		else:
+			return "Found no keywords"
+
+
+	def count_keywords(self):
+		"""
+			Searches keywords in text from <p> paragrapghs
+			Iterates through text, lowers words and eliminates punctuation signs 
+			to compare words with keywords
+
+			Updates self.keyword_frequency dictionary
+		"""
+		for text in self.web_analyse.p_text:
+			for word in text.split():
+				word = word.strip(string.punctuation).lower()
+				if word in self.keywords_frequency:
+					self.keywords_frequency[word] += 1
 
 
 class UrlValidation:
@@ -166,10 +169,9 @@ class UrlValidation:
 		validation: boolean;
 		http_url: output url with made sure for 'http://' at the beginning
 	"""
-
 	def __init__(self, input_url):
 		self.input_url = input_url
-		self.validator = None
+		self.validator = ''
 		self.validation = self.validate_url()
 		self.http_url = self.set_http_url()
 
@@ -191,10 +193,11 @@ class UrlValidation:
 
 	def set_http_url(self):
 		"""
-			Adds 'http://' to url if 'http://' or 'https://' is not present, for scrapper to work correctly
+			Takes self.url and returns new one with added 'http://' to url 
+			if 'http://' or 'https://' is not present
 		"""
 
-		if self.validator=='domain':
+		if self.validator == 'domain':
 			http_url = 'http://' + self.input_url
 		else:
 			http_url = self.input_url
@@ -203,11 +206,12 @@ class UrlValidation:
 
 def main():
 	url = 'https://www.w3schools.com'
-	data = WebData(url)
+	data = WebBytes(url)
 	data.open_url()
 	if data.have_data:
-		webanalyse = WebAnalyse(data)
-		print(webanalyse.__repr__())
+		web_analyse = WebAnalyse(data)
+		count_keywords = CountKeywords(web_analyse)
+		print(count_keywords)
 	else:
 		print(data)
 		
