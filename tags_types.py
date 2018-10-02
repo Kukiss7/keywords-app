@@ -5,7 +5,19 @@ import abc
 
 
 class GeneralTag(metaclass=abc.ABCMeta):
+    """
+        Base class for custom Tags classes
 
+
+        arbitrary attributes that need too be provided:
+        
+        property - name: string
+        property - attrs: dictionary to put in soup.find_all method
+        static method - extract_data: should return needed list of objects
+    """
+
+
+    # name and attrs are variables to search for meta tag
     @property
     @abc.abstractmethod
     def name(self, value):
@@ -25,6 +37,9 @@ class GeneralTag(metaclass=abc.ABCMeta):
 
 
 class PTag(GeneralTag):
+    """
+        Configuration to search for data in <p> tags
+    """
 
     name = 'p'
     attrs = {}
@@ -40,7 +55,12 @@ class PTag(GeneralTag):
 
 
 class KeywordsTag(GeneralTag):
+    """
+        Configuration to search for keywords from meta tag
+    """
 
+    # attrs' expression looks for pair 'name':'keywords' 
+    # where keywords is case insensitive 
     name = 'meta'
     attrs = {'name':re.compile("^keywords$", re.I)}
 
@@ -56,14 +76,20 @@ class KeywordsTag(GeneralTag):
 
 
 
-class TagsData:
+class TagData:
     """
+        Gathers information from bs.BeautifulSoup object
+        based on given tag type
 
+        soup: bs.BeautifulSoup object
+        tag_type: given tag properties
+        tag_parts_set: set of tags
+        property _data: list - gathered data extracted with tag_type.extract_data() 
     """
     def __init__(self, soup, tag_type):
         self.soup = soup
         self.tag_type = tag_type
-        self.tags_set = self.find_tags()
+        self.tag_parts_set = self.find_tags()
         self._data = None
 
 
@@ -75,7 +101,7 @@ class TagsData:
     def data(self):
         if not self._data:
             data = []
-            for tag in self.tags_set:
+            for tag in self.tag_parts_set:
                 for word in self.tag_type.extract_data(tag):
                     data.append(word)
             self._data = data
