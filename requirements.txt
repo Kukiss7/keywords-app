@@ -12,7 +12,7 @@ pefile==2018.8.8
 pypiwin32==223
 PyQt5==5.11.2
 PyQt5-sip==4.19.12
-pywin32==223
+pywin32==301
 six==1.11.0
 urllib3==1.23
 validators==0.12.2
